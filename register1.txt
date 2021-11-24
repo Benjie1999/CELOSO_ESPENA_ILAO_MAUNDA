@@ -1,0 +1,47 @@
+$(function(){
+    $('#register').click(function(e){
+        
+        var valid = this.form.checkValidity();
+        if(valid){
+            
+            var fname 		= $('#fname').val();
+            var lname		= $('#lname').val();
+            var email 		= $('#email').val();
+            var address 	= $('#address').val();
+            var password 	= $('#password').val();
+            var userid	    = $('#userid').val();
+            var contact     = $('#contact').val();
+			var dummy       = $('#dummy').val();
+            
+            
+            e.preventDefault();
+            
+            $.ajax({
+                type: 'POST',
+                url: 'process.php',
+                data:{fname:fname, lname:lname, email:email, userid:userid,
+                address:address, password:password, contact:contact, dummy:dummy},
+                success:function(data){
+                    Swal.fire({
+                        'title': 'Success!',
+                        'text': data,
+                        'type': 'success'
+                    })
+                    setTimeout('window.location.href="login.php"',2000);
+                },
+                erros:function(data){
+                    Swal.fire({
+                        'title': 'Error',
+                        'text': 'There were errors while saving the data',
+                        'type': 'error'
+                    })
+                }
+            });
+            
+        }
+        else{
+            
+        }
+        
+    })
+});

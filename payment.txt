@@ -1,0 +1,293 @@
+
+<?php
+  $connect = mysqli_connect("localhost", "root", "", "kopiedb");
+
+  if(isset($_POST["add_to_cart"]))
+  {
+    if(isset($_SESSION["shopping_cart"]))
+    {
+      $item_array_id = array_column($_SESSION["shopping_cart"], "item_id");
+      if(!in_array($_GET["id"], $item_array_id))
+      {
+        $count = count($_SESSION["shopping_cart"]);
+        $item_array = array(
+          'item_id'			=>	$_GET["id"],
+          'item_name'			=>	$_POST["hidden_name"],
+          'item_price'		=>	$_POST["hidden_price"],
+          'item_quantity'		=>	$_POST["quantity"]
+        );
+        $_SESSION["shopping_cart"][$count] = $item_array;
+      }
+      else
+      {
+        echo '<script>alert("Item Already Added")</script>';
+      }
+    }
+    else
+    {
+      $item_array = array(
+        'item_id'			=>	$_GET["id"],
+        'item_name'			=>	$_POST["hidden_name"],
+        'item_price'		=>	$_POST["hidden_price"],
+        'item_quantity'		=>	$_POST["quantity"]
+      );
+      $_SESSION["shopping_cart"][0] = $item_array;
+    }
+  }
+  
+  if(isset($_GET["action"]))
+  {
+    if($_GET["action"] == "delete")
+    {
+      foreach($_SESSION["shopping_cart"] as $keys => $values)
+      {
+        if($values["item_id"] == $_GET["id"])
+        {
+          unset($_SESSION["shopping_cart"][$keys]);
+          echo '<script>alert("Item Removed")</script>';
+          echo '<script>window.location="menu.php"</script>';
+        }
+      }
+    }
+  }
+  
+?>
+<?php
+	require_once('config.php');
+	session_start();
+	require("functions.php");
+  
+  if(!isset($_SESSION['userlogin'])){
+		
+	}
+	else{
+		$sql2 = "SELECT * FROM ".$_SESSION['userlogin']['userid']."";
+		$stmt = $db->prepare($sql2);
+		$stmt->execute();
+		$cartAccount = $stmt->fetchAll();
+		$_SESSION['cart'] = $cartAccount;
+	}
+	
+	if(isset($_GET['logout'])){
+		session_destroy();
+		unset($_SESSION);
+		header("Location: login.php");
+	}
+?>
+<html>
+    <head>
+      <title>Kopie Shop</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+      <!-- <link rel="stylesheet" type="text/css" href="menustyle.css"> -->
+      <link rel="stylesheet" type="text/css" href="style.css">
+      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+      <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script> 
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+      <script src="js/menu.js"></script>
+
+      <style>
+        .log {
+          background-color:rgba(128,128,128);
+          
+        }
+
+        .login{
+          margin-bottom: auto;
+        }
+
+        .but-login{
+          background-color:  #6495ED;
+        }
+      </style>
+    </head>
+    <body class="bg">
+       <?php
+        include 'navbarpay.php';
+       ?>
+
+			  
+			  <div class="container-fluid mb-4">
+            <div class="row">
+              <div class="col-6 imglog1 shadow ml-5 rounded-left log py-2">
+                <form>
+                  <h2> Payment </h2>
+                    <table class="table table-bordered">
+                        <tr>
+                          <th width="40%">Item Name</th>
+                          <th width="10%">Quantity</th>
+                          <th width="20%">Price</th>
+                          <th width="15%">Total</th>
+                          <th width="5%">Action</th>
+                        </tr>
+                        <?php
+                        if(!empty($_SESSION["shopping_cart"]))
+                        {
+                          $total = 0;
+                          foreach($_SESSION["shopping_cart"] as $keys => $values)
+                          {
+                        ?>
+                        <tr>
+                          <td><?php echo $values["item_name"]; ?></td>
+                          <td><?php echo $values["item_quantity"]; ?></td>
+                          <td>₱ <?php echo $values["item_price"]; ?></td>
+                          <td>₱ <?php echo number_format($values["item_quantity"] * $values["item_price"], 2);?></td>
+                          <td><a href="payment.php?action=delete&id=<?php echo $values["item_id"]; ?>"><span class="text-danger">Remove</span></a></td>
+                        </tr>
+                        <?php
+                            $total = $total + ($values["item_quantity"] * $values["item_price"]);
+                          }
+                        ?>
+                        <tr>
+                          <td colspan="3" align="right">Total</td>
+                          <td align="right">₱<?php echo number_format($total, 2); ?></td>
+                          <td>
+                          <input type="submit" class="btn but-login addthis" id="submitCC" value="Confirm">
+					
+                          </td>
+                        </tr>
+                        <?php
+                        }
+                        ?>
+                          
+                      </table>
+                  <div class="row">
+                    <div class="col-2">
+                      <div class="form-group">  
+                        <input type="submit" class="btn but-login addthis" id="submitCC" value="Confirm">
+                      </div>
+                    </div>
+                    <div class="col-2">
+                      <div class="form-group">  
+                        <input type="button" class="btn but-login" id="goBack" value="Go Back" onclick="javascript:location.href='menu.php'">
+                      </div>
+                    </div>
+                  </div>
+              </div>
+              </div>
+						</div>
+            
+                </form> 
+        </div>
+        <?php
+  include 'footer.php';
+?>
+  <script>
+      $(function(){
+              $('.clearThis').click(function(e){
+                var name = $(this).attr("data-name");
+                var price = $(this).attr("data-price");
+                  e.preventDefault();
+                      $.ajax({
+                          type: 'POST',
+                          url: 'processdelete.php',
+                          data:{name:name, price:price},
+                          success:function(){
+                              setTimeout(function(){location.reload();}, 1000);
+                              loadCart();
+                              displayCart();
+                              console.log(cart);
+                              Swal.fire({
+                                  'title': 'Success!',
+                                  'text': 'Removed from cart',
+                                  'type': 'success',
+                                  showConfirmButton: false
+                              })
+                          },
+                          erros:function(){
+                              Swal.fire({
+                                  'title': 'Error',
+                                  'text': 'There were errors while saving the data',
+                                  'type': 'error',
+                              })
+                          }
+                      });  
+              })
+          });
+
+
+		
+		
+      $(function(){
+              $('.addthis').click(function(e){
+                var valid = this.form.checkValidity();
+                if(valid){
+                var cartArray = add_to_cart();
+                var orders = cartArray.map(function(elem){return elem.name;}).join(", ");
+                var price = thouNum(totalAll);
+
+				 
+                  e.preventDefault();
+                    $.ajax({
+                      type: 'POST',
+                      url: 'processpayment.php',
+                      data:{orders:orders, price:price},
+                      success:function(data){
+                          loadCart();
+                          displayCart();
+						  
+                          if(data=="Please fill up your cart"){
+                            //setTimeout(function(){location.href="checkout.php"} , 3000);   
+                            Swal.fire({
+                              'title': 'Sorry!',
+                              'text': data,
+                              'type': 'error',
+                             // showConfirmButton: false
+                            })
+                          }
+						  
+						      else if(data=="You do not have enough funds to make this transaction"){
+                            //setTimeout(function(){location.href="checkout.php"} , 3000);   
+                            Swal.fire({
+                              'title': 'Sorry!',
+                              'text': data,
+                              'type': 'error',
+                             // showConfirmButton: false
+							  })}
+							
+							   else if(data=="Please wait for the digital receipt"){
+                            setTimeout(function(){location.href="checkout.php"} , 3000);   
+                            Swal.fire({
+                              'title': 'Nice!',
+                              'text': data,
+                              'type': 'success',
+                             // showConfirmButton: false
+							   })
+                          }
+                          else{
+                            Swal.fire({
+                              'title': 'HMMP!',
+                              'text': data,
+                              'type': 'error',
+                              
+                          })
+                          }
+                          
+                      },
+                      erros:function(data){
+                          Swal.fire({
+                              'title': 'Error',
+                              'text': 'There were errors while saving the data',
+                              'type': 'error'
+                          })
+                      }
+                  });
+              }})
+          });
+
+          shopping_cart();
+          loadCart();	
+          displayCart();
+          console.log(cart);
+      
+      </script>
+
+    </body>
+
+</html>

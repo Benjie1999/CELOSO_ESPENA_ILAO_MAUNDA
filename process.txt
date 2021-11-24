@@ -1,0 +1,40 @@
+<?php
+	require_once('config.php');
+	
+?>
+<?php
+
+if(isset($_POST)){
+	$fname 			= $_POST['fname'];
+	$lname 			= $_POST['lname'];
+	$email			= $_POST['email'];
+	$address 		= $_POST['address'];
+	$password	 	= sha1($_POST['password']);
+	$contact		= $_POST['contact'];
+	$userid			= $_POST['userid'];
+	$dummy			= $_POST['dummy'];
+	//$tablename 		= mysql_real_escape_string($_POST['email']);
+	
+	$sql="INSERT INTO users(fname, lname, userid, email, address, password, contact,dummy)
+	VALUES('$fname','$lname',',$userid','$emal','$address','$password','$contact,'$dummy')";
+	$stminsert = $db->prepare($sql);
+	$result=$stminsert->execute([$fname, $lname, $userid, $email, $address, $password, $contact,$dummy]);
+ 	$sql ="CREATE TABLE $userid(
+	 			id INT(6) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				name VARCHAR(255) NOT NULL,
+	 			image VARCHAR(255) NOT NULL,
+	 			price INT(255) NOT NULL)";
+	 $db->exec($sql);
+	//$stmt->bindParam(":tablename", $_POST['userid']);
+	
+	
+	if($result){
+		echo 'Successfully Saved';
+	}
+	else{
+		echo 'There were errors while saving the data';
+	}
+}
+else{
+	echo 'No data';
+}
